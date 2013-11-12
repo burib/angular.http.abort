@@ -1,20 +1,22 @@
 <!DOCTYPE html>
 <html>
-  <head>
-  </head>
+<head>
+</head>
+<body>
+<div ng-app="queryApp" ng-controller="QueryCtrl">
+  <input type="button" ng-click="send()" value="SendQuery"/><br/>
+  <input type="button" ng-click="cancel()" value="CancelQuery"/>
 
-  <body>
-    <div ng-app="queryApp" ng-controller="QueryCtrl">
-      <input type="button" ng-click="send()" value="SendQuery"><br/>
-      <input type="button" ng-click="cancel()" value="CancelQuery">
-      <p>status: {{status}}</p>
-    </div>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.1.5/angular.js"></script>
-    <script>
-      angular.module('queryApp', []).
+  <p>status: {{status}}</p>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0/angular.js"></script>
+<script>
+  angular.module('queryApp', []).
 
-      service('QueryService', function ($http, $q) {
-        var deferred = null;
+      service('QueryService',function ($http, $q, $timeout) {
+        var deferred = null,
+            timer = null;
+
         return {
           cancelQuery: function () {
             deferred.resolve();
@@ -23,22 +25,37 @@
             /**
              * cancel previous request if there was any.
              */
-            if (deferred) {
-                this.cancelQuery();
+            if(deferred) {
+              this.cancelQuery();
             }
             deferred = $q.defer();
+            this.startTimeout();
             return $http.
-              get('/data', {
-                timeout: deferred.promise
-              }).
-              then(function (response) {
-                return response.data;
-              });
+                get('/data', {
+                  timeout: deferred.promise
+                }).
+                then(function (response) {
+                  return response.data;
+                });
+          },
+
+          startTimeout: function () {
+            this.stopTimeout();
+            var self = this;
+            timer = $timeout(function () {
+              self.cancelQuery();
+            }, 3000);
+          },
+
+          stopTimeout: function () {
+            if(timer) {
+              $timeout.cancel(timer);
+            }
           }
         }
       }).
 
-      controller('QueryCtrl', function($scope, QueryService) {
+      controller('QueryCtrl', function ($scope, QueryService) {
         $scope.status = 'init';
 
         $scope.cancel = function () {
@@ -48,12 +65,18 @@
         $scope.send = function () {
           $scope.status = 'loading...';
           QueryService.sendQuery().then(function () {
-            $scope.status = 'done!';
-          });
+                $scope.status = 'done!';
+              },
+              function () {
+                /**
+                 * IE doesn't run into this block.
+                 */
+                $scope.status = 'timeout';
+              });
         };
       });
 
-    </script>
-  </body>
+</script>
+</body>
 
 </html>
