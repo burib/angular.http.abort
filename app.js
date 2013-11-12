@@ -1,6 +1,6 @@
 var express = require('express'),
     http = require('http'),
-	app = express();
+    app = express();
 
 app.set('port', process.env.PORT || 666);
 app.use(express.static(__dirname + '/public', { maxAge: 666 }));
