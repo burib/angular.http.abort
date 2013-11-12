@@ -1,7 +1,7 @@
 angular.http.abort
 ==================
 
-example usage for aborting http request with angular.   
+Example implemantion of http request **abort** and **timeout** with angular.   
 
 **How to Start:**  
    
