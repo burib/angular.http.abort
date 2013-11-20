@@ -69,7 +69,10 @@
               },
               function () {
                 /**
-                 * IE doesn't run into this block.
+                 * IE doesn't run into this block. 
+                 * fixed in 1.2.2
+                 * issue: https://github.com/angular/angular.js/issues/4913
+                 * fix: https://github.com/gonzaloruizdevilla/angular.js/commit/c882b26062d4030f48d7c50d3e469669b910ea9f
                  */
                 $scope.status = 'timeout';
               });
