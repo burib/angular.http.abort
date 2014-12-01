@@ -4,80 +4,73 @@
 </head>
 <body>
 <div ng-app="queryApp" ng-controller="QueryCtrl">
-  <input type="button" ng-click="send()" value="SendQuery"/><br/>
-  <input type="button" ng-click="cancel()" value="CancelQuery"/>
+    <input type="button" ng-click="send()" value="SendQuery"/> <input type="button" ng-click="cancel()" value="CancelQuery"/>
 
-  <p>status: {{status}}</p>
+    <p>status: {{status}}</p>
 </div>
-<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0/angular.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.27/angular.js"></script>
 <script>
-  angular.module('queryApp', []).
+    angular.module('queryApp', []).
 
-      service('QueryService',function ($http, $q, $timeout) {
-        var deferred = null,
-            timer = null;
+            service('QueryService', function ($http, $q, $timeout) {
+                var deferred = null,
+                        timer = null;
 
-        return {
-          cancelQuery: function () {
-            deferred.resolve();
-          },
-          sendQuery: function (query) {
-            /**
-             * cancel previous request if there was any.
-             */
-            if(deferred) {
-              this.cancelQuery();
-            }
-            deferred = $q.defer();
-            this.startTimeout();
-            return $http.
-                get('/data', {
-                  timeout: deferred.promise
-                }).
-                then(function (response) {
-                  return response.data;
-                });
-          },
+                return {
+                    cancelQuery: function () {
+                        deferred.resolve();
+                    },
+                    sendQuery: function () {
+                        /**
+                         * cancel previous request if there was any.
+                         */
+                        if (deferred) {
+                            this.cancelQuery();
+                        }
+                        deferred = $q.defer();
+                        this.startTimeout();
+                        return $http.
+                                get('/data', {
+                                    timeout: deferred.promise
+                                }).
+                                then(function (response) {
+                                    return response.data;
+                                });
+                    },
 
-          startTimeout: function () {
-            this.stopTimeout();
-            var self = this;
-            timer = $timeout(function () {
-              self.cancelQuery();
-            }, 3000);
-          },
+                    startTimeout: function () {
+                        this.stopTimeout();
+                        var self = this;
+                        timer = $timeout(function () {
+                            self.cancelQuery();
+                        }, 3000);
+                    },
 
-          stopTimeout: function () {
-            if(timer) {
-              $timeout.cancel(timer);
-            }
-          }
-        }
-      }).
+                    stopTimeout: function () {
+                        if (timer) {
+                            $timeout.cancel(timer);
+                        }
+                    }
+                }
+            }).
 
-      controller('QueryCtrl', function ($scope, QueryService) {
-        $scope.status = 'init';
+            controller('QueryCtrl', function ($scope, QueryService) {
+                $scope.status = 'init';
 
-        $scope.cancel = function () {
-          $scope.status = 'canceled';
-          QueryService.cancelQuery();
-        };
-        $scope.send = function () {
-          $scope.status = 'loading...';
-          QueryService.sendQuery().then(function () {
-                $scope.status = 'done!';
-              },
-              function () {
-                /**
-                 * IE doesn't run into this block. 
-                 * fixed in 1.2.2
-                 * issue: https://github.com/angular/angular.js/issues/4913
-                 * fix: https://github.com/gonzaloruizdevilla/angular.js/commit/c882b26062d4030f48d7c50d3e469669b910ea9f
-                 */
-                $scope.status = 'timeout';
-              });
-        };
-      });
+                $scope.cancel = function () {
+                    $scope.status = 'canceled';
+                    QueryService.cancelQuery();
+                };
+                $scope.send = function () {
+                    $scope.status = 'loading...';
+                    QueryService.sendQuery().then(function () {
+                                $scope.status = 'done!';
+                            },
+                            function () {
+                                $scope.status = 'timeout';
+                            });
+                };
+            });
 
 </script>
 </body>
